@@ -90,8 +90,8 @@ public class MyPlugin extends Plugin {
 
 ## License
 
-This project is licensed under the GNU General Public License v2.0 (GPL-2.0).
-See the [LICENSE](LICENSE) file for the full license text.
+JByteMod Reforked is distributed under the GNU General Public License v2 (GPL-2.0).
+See the [LICENSE](LICENSE) file for details.
 
 ---
 
