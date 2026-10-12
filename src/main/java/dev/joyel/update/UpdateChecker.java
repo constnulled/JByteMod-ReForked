@@ -18,8 +18,8 @@ import java.util.List;
 
 public final class UpdateChecker {
 
-    private static final String RELEASES_URL = "https://github.com/JoyelTheDev/JByteMod-ReForked/releases";
-    private static final String RELEASES_API = "https://api.github.com/repos/JoyelTheDev/JByteMod-ReForked/releases?per_page=30";
+    private static final String RELEASES_URL = "https://github.com/constnulled/JByteMod-ReForked/releases";
+    private static final String RELEASES_API = "https://api.github.com/repos/constnulled/JByteMod-ReForked/releases?per_page=30";
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))

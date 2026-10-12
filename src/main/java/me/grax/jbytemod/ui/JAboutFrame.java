@@ -51,8 +51,8 @@ public class JAboutFrame extends JDialog {
                         "<br/>Copyright \u00A9 2016-2018 noverify<br/><br/>" +
                         "Copyright \u00A9 2019 Panda<br/><br/>" +
                         "Copyright \u00A9 2020-" + currentYear + " xBrownieCodez<br/><br/>" +
-                        "JByteMod by noverify, Reborn by Panda, Remastered by xBrownieCodez and JoyelTheDev (2026)" +
-                        "<br/><font color=\"#0000EE\"><u>https://github.com/JoyelTheDev/JByteMod-ReForked</u></font>"
+                        "JByteMod by noverify, Reborn by Panda, Remastered by xBrownieCodez and constnulled (2026)" +
+                        "<br/><font color=\"#0000EE\"><u>https://github.com/constnulled/JByteMod-ReForked</u></font>"
         ));
         titlePane.setEditable(false);
 
