@@ -1,7 +1,7 @@
 # JByteMod ReForked
 
-[![Build](https://github.com/constnulled/JByteMod-ReForked/actions/workflows/master.yml/badge.svg)](https://github.com/xbrowniecodez/JByteMod-ReForked/actions)
-[![Version](https://img.shields.io/badge/version-2.9.4-blue)](https://github.com/xbrowniecodez/JByteMod-ReForked/releases)
+[![Build](https://github.com/constnulled/JByteMod-ReForked/actions/workflows/master.yml/badge.svg)](https://github.com/constnulled/JByteMod-ReForked/actions)
+[![Version](https://img.shields.io/badge/version-2.9.4-blue)](https://github.com/constnulled/JByteMod-ReForked/releases)
 [![Java](https://img.shields.io/badge/Java-25%2B-orange)](https://openjdk.org/projects/jdk/25/)
 [![License](https://img.shields.io/badge/license-GPL--2.0-green)](LICENSE)
 
