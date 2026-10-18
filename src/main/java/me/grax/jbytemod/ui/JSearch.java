@@ -8,10 +8,8 @@ import me.grax.jbytemod.utils.list.LazyListModel;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-public class JSearch extends JDialog implements ActionListener {
+public class JSearch extends JDialog {
 
     private MyCodeList list;
     private JTextField tf;
@@ -42,12 +40,13 @@ public class JSearch extends JDialog implements ActionListener {
         cp.add(border, BorderLayout.NORTH);
         JPanel bottom = new JPanel(new GridLayout(1, 0, 10, 10));
         JButton findBtn = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("find_next"));
-        findBtn.addActionListener(this);
+        findBtn.addActionListener(e -> search(true));
         bottom.add(findBtn);
+        JButton findPrevBtn = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("find_prev"));
+        findPrevBtn.addActionListener(e -> search(false));
+        bottom.add(findPrevBtn);
         JButton closeBtn = new JButton(Main.INSTANCE.getJByteMod().getLanguageRes().getResource("close"));
-        closeBtn.addActionListener(e -> {
-            this.dispose();
-        });
+        closeBtn.addActionListener(e -> this.dispose());
         bottom.add(closeBtn);
         cp.add(bottom, BorderLayout.SOUTH);
         final JPanel center = new JPanel(new GridLayout());
@@ -59,12 +58,10 @@ public class JSearch extends JDialog implements ActionListener {
         center.add(tf);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        //TODO: go forward and backward
+    private void search(boolean forward) {
         boolean mcase = mc.isSelected();
         String key = tf.getText().trim();
         if (ww.isSelected()) {
-            //TODO words at beginning or surrounded by quote
             key = " " + key + " ";
         }
         if (!mcase) {
@@ -72,14 +69,38 @@ public class JSearch extends JDialog implements ActionListener {
         }
         if (!key.isEmpty()) {
             LazyListModel<InstrEntry> model = (LazyListModel<InstrEntry>) list.getModel();
-            if (!searchNextFrom(list.getSelectedIndex() + 1, mcase, key, model)) {
-                searchNextFrom(0, mcase, key, model);
+            if (forward) {
+                if (!searchNextFrom(list.getSelectedIndex() + 1, mcase, key, model)) {
+                    searchNextFrom(0, mcase, key, model);
+                }
+            } else {
+                int from = list.getSelectedIndex() - 1;
+                if (from < 0) from = model.getSize() - 1;
+                if (!searchPrevFrom(from, mcase, key, model)) {
+                    searchPrevFrom(model.getSize() - 1, mcase, key, model);
+                }
             }
         }
     }
 
     private boolean searchNextFrom(int index, boolean mcase, String key, LazyListModel<InstrEntry> model) {
         for (int i = index; i < model.getSize(); i++) {
+            InstrEntry entry = model.getElementAt(i);
+            String easy = entry.toEasyString();
+            if (!mcase) {
+                easy = easy.toLowerCase();
+            }
+            if (easy.contains(key)) {
+                list.setSelectedIndex(i);
+                list.scrollRectToVisible(list.getCellBounds(list.getMinSelectionIndex(), list.getMaxSelectionIndex()));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean searchPrevFrom(int index, boolean mcase, String key, LazyListModel<InstrEntry> model) {
+        for (int i = index; i >= 0; i--) {
             InstrEntry entry = model.getElementAt(i);
             String easy = entry.toEasyString();
             if (!mcase) {
