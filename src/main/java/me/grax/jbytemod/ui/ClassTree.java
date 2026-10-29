@@ -73,6 +73,7 @@ public class ClassTree extends JTree implements IDropUser {
         tm.reload();
 
         preloadMap = new HashMap<>();
+        Map<String, SortedTreeNode> classNodeMap = new HashMap<>();
         if (jar.getClasses() != null)
             for (ClassNode c : jar.getClasses().values()) {
                 String name = c.name.replace("<html>", "HTMLCrashtag");
@@ -104,10 +105,22 @@ public class ClassTree extends JTree implements IDropUser {
                 }
                 SortedTreeNode clazz = new SortedTreeNode(c);
                 prev.add(clazz);
+                classNodeMap.put(c.name, clazz);
                 for (MethodNode m : c.methods) {
                     clazz.add(new SortedTreeNode(c, m));
                 }
             }
+        for (Map.Entry<String, SortedTreeNode> entry : new ArrayList<>(classNodeMap.entrySet())) {
+            String innerName = entry.getKey();
+            int dollar = innerName.lastIndexOf('$');
+            if (dollar <= 0) {
+                continue;
+            }
+            SortedTreeNode outer = classNodeMap.get(innerName.substring(0, dollar));
+            if (outer != null && outer != entry.getValue()) {
+                outer.add(entry.getValue());
+            }
+        }
         if (jar.getOutput() != null && !jar.getOutput().isEmpty()) {
             SortedTreeNode resourcesRoot = new SortedTreeNode("[Resources]");
             HashMap<String, SortedTreeNode> resDirs = new HashMap<String, SortedTreeNode>();
