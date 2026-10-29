@@ -32,6 +32,9 @@ public final class ToastManager {
     }
 
     private static final int TOAST_WIDTH = 340;
+    private static final int TOAST_MIN_HEIGHT = 52;
+    private static final int TOAST_MAX_HEIGHT = 160;
+    private static final int MAX_TEXT_LENGTH = 240;
     private static final int MARGIN = 18;
     private static final int GAP = 10;
     private static final int MAX_VISIBLE = 5;
@@ -135,6 +138,34 @@ public final class ToastManager {
         }
     }
 
+    private static int countLines(String text, FontMetrics fm, int width) {
+        int lines = 0;
+        for (String paragraph : text.split("\n", -1)) {
+            int lineWidth = 0;
+            int paragraphLines = 1;
+            for (String word : paragraph.split(" ", -1)) {
+                int wordWidth = fm.stringWidth(word);
+                int spaceWidth = fm.charWidth(' ');
+                if (wordWidth > width) {
+                    if (lineWidth > 0) {
+                        paragraphLines++;
+                    }
+                    paragraphLines += wordWidth / width;
+                    lineWidth = wordWidth % width;
+                } else if (lineWidth == 0) {
+                    lineWidth = wordWidth;
+                } else if (lineWidth + spaceWidth + wordWidth <= width) {
+                    lineWidth += spaceWidth + wordWidth;
+                } else {
+                    paragraphLines++;
+                    lineWidth = wordWidth;
+                }
+            }
+            lines += paragraphLines;
+        }
+        return Math.max(1, lines);
+    }
+
     private static final class Toast extends JWindow {
         private final Kind kind;
         private final Timer animator;
@@ -187,7 +218,8 @@ public final class ToastManager {
             iconWrap.add(icon);
 
             int textWidth = TOAST_WIDTH - 18 - 14 - 24 - 12 - 4;
-            JTextArea message = new JTextArea(text);
+            String shown = text.length() > MAX_TEXT_LENGTH ? text.substring(0, MAX_TEXT_LENGTH) + "..." : text;
+            JTextArea message = new JTextArea(shown);
             message.setLineWrap(true);
             message.setWrapStyleWord(true);
             message.setEditable(false);
@@ -196,8 +228,12 @@ public final class ToastManager {
             message.setBorder(null);
             message.setForeground(new Color(0xE6E6E6));
             message.setFont(message.getFont().deriveFont(Font.PLAIN, 13f));
-            message.setSize(new Dimension(textWidth, 1));
-            message.setPreferredSize(new Dimension(textWidth, message.getPreferredSize().height));
+            FontMetrics fm = message.getFontMetrics(message.getFont());
+            int lines = countLines(shown, fm, (int) (textWidth * 0.88));
+            int textHeight = Math.min(lines * fm.getHeight() + 4, TOAST_MAX_HEIGHT - 30);
+            message.setPreferredSize(new Dimension(textWidth, textHeight));
+            message.setMinimumSize(new Dimension(textWidth, textHeight));
+            message.setMaximumSize(new Dimension(textWidth, textHeight));
 
             body.add(iconWrap, BorderLayout.WEST);
             JPanel textWrap = new JPanel(new BorderLayout());
@@ -207,7 +243,7 @@ public final class ToastManager {
             body.add(textWrap, BorderLayout.CENTER);
             setContentPane(body);
             pack();
-            setSize(TOAST_WIDTH, Math.max(getHeight(), 52));
+            setSize(TOAST_WIDTH, Math.min(TOAST_MAX_HEIGHT, Math.max(getHeight(), TOAST_MIN_HEIGHT)));
             try {
                 if (GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
                         .isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.PERPIXEL_TRANSPARENT)) {
