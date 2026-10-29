@@ -367,10 +367,15 @@ public class BytecodeUtils implements Opcodes {
     public static ClassNode getClassNodeFromBytes(byte[] bytes) {
         if(!ClassUtils.isClassFileFormat(bytes))
             throw new RuntimeException("Provided bytes are not a class file!");
-        CustomClassReader classReader = new CustomClassReader(bytes);
-        ClassNode classNode = new ClassNode();
-        classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
-        return classNode;
+        try {
+            ClassNode classNode = new ClassNode();
+            new CustomClassReader(bytes).accept(classNode, ClassReader.EXPAND_FRAMES);
+            return classNode;
+        } catch (Exception e) {
+            ClassNode classNode = new ClassNode();
+            new CustomClassReader(bytes).accept(classNode, ClassReader.SKIP_FRAMES);
+            return classNode;
+        }
     }
 
     /**

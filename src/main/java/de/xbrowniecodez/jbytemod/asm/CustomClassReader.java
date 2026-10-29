@@ -5,17 +5,20 @@ import org.objectweb.asm.Opcodes;
 
 public class CustomClassReader extends ClassReader {
 
-    private final byte[] rawBytes;
+    private static final int VERSION_OFFSET = 6;
 
     public CustomClassReader(byte[] classFile) {
         super(classFile);
-        this.rawBytes = classFile;
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public short readShort(int offset) {
-        if (offset + 1 >= rawBytes.length) return Opcodes.V1_7;
-        return (short) ((rawBytes[offset] & 255) << 8 | rawBytes[offset + 1] & 255);
+        byte[] data = this.b;
+        if (data == null || offset < 0 || offset + 1 >= data.length) return Opcodes.V1_7;
+        short value = (short) ((data[offset] & 255) << 8 | data[offset + 1] & 255);
+        if (offset == VERSION_OFFSET && value > Opcodes.V1_8) return Opcodes.V1_8;
+        return value;
     }
 
     @Override

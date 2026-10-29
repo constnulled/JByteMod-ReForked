@@ -190,7 +190,7 @@ public class LoadTask extends SwingWorker<Void, Integer> {
                 keepRaw(name, bytes, otherFiles);
             }
         } catch (Exception ex) {
-            Main.INSTANCE.getLogger().warn("Could not parse " + name + ", keeping raw bytes: " + ex);
+            Main.INSTANCE.getLogger().warn("Could not parse " + name + ", keeping raw bytes: " + ex + (ex.getStackTrace().length > 0 ? " at " + ex.getStackTrace()[0] : ""));
             keepRaw(name, bytes, otherFiles);
         }
     }
