@@ -95,10 +95,31 @@ public class JdwpPacket {
         private final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         private final DataOutputStream dos = new DataOutputStream(bos);
 
-        public DataWriter writeByte(int v) throws IOException { dos.writeByte(v); return this; }
-        public DataWriter writeBoolean(boolean v) throws IOException { dos.writeByte(v ? 1 : 0); return this; }
-        public DataWriter writeInt(int v) throws IOException { dos.writeInt(v); return this; }
-        public DataWriter writeLong(long v) throws IOException { dos.writeLong(v); return this; }
+        public DataWriter writeByte(int v) throws IOException { 
+            dos.writeByte(v); 
+            return this; 
+        }
+        
+        public DataWriter writeBoolean(boolean v) throws IOException { 
+            dos.writeByte(v ? 1 : 0); 
+            return this; 
+        }
+        
+        public DataWriter writeInt(int v) throws IOException { 
+            dos.writeInt(v); 
+            return this; 
+        }
+        
+        public DataWriter writeLong(long v) throws IOException { 
+            dos.writeLong(v); 
+            return this; 
+        }
+        
+        public DataWriter writeBytes(byte[] v) throws IOException { 
+            dos.write(v); 
+            return this; 
+        }
+        
         public DataWriter writeString(String s) throws IOException {
             byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
             dos.writeInt(bytes.length);
@@ -112,13 +133,17 @@ public class JdwpPacket {
 
         private void writeIdSized(long id, int size) throws IOException {
             switch (size) {
-                case 4: dos.writeInt((int) id); break;
-                case 8: dos.writeLong(id); break;
+                case 4: dos.writeInt((int) id); 
+                break;
+                case 8: dos.writeLong(id); 
+                break;
                 default: throw new IOException("Unsupported id size: " + size);
             }
         }
 
-        public byte[] toBytes() { return bos.toByteArray(); }
+        public byte[] toBytes() { 
+            return bos.toByteArray(); 
+        }
     }
 
     public static class DataReader {
@@ -128,11 +153,25 @@ public class JdwpPacket {
             this.dis = new DataInputStream(new ByteArrayInputStream(data));
         }
 
-        public int readByte() throws IOException { return dis.readUnsignedByte(); }
-        public boolean readBoolean() throws IOException { return dis.readByte() != 0; }
-        public int readInt() throws IOException { return dis.readInt(); }
-        public long readLong() throws IOException { return dis.readLong(); }
-        public short readShort() throws IOException { return dis.readShort(); }
+        public int readByte() throws IOException { 
+            return dis.readUnsignedByte(); 
+        }
+        
+        public boolean readBoolean() throws IOException { 
+            return dis.readByte() != 0; 
+        }
+        
+        public int readInt() throws IOException { 
+            return dis.readInt(); 
+        }
+        
+        public long readLong() throws IOException { 
+            return dis.readLong(); 
+        }
+        
+        public short readShort() throws IOException { 
+            return dis.readShort(); 
+        }
 
         public String readString() throws IOException {
             int len = dis.readInt();
@@ -143,12 +182,16 @@ public class JdwpPacket {
 
         public long readObjectId(int size) throws IOException {
             switch (size) {
-                case 4: return dis.readInt() & 0xFFFFFFFFL;
-                case 8: return dis.readLong();
+                case 4: 
+                    return dis.readInt() & 0xFFFFFFFFL;
+                case 8: 
+                    return dis.readLong();
                 default: throw new IOException("Unsupported id size: " + size);
             }
         }
 
-        public int available() throws IOException { return dis.available(); }
+        public int available() throws IOException { 
+            return dis.available(); 
+        }
     }
 }

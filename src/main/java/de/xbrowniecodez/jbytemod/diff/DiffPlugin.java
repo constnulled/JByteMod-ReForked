@@ -13,7 +13,7 @@ public class DiffPlugin extends Plugin {
     private DiffPanel diffPanel;
 
     public DiffPlugin() {
-        super("Bytecode Diff / Patch", "1.0.0", "JByteModX");
+        super("Bytecode Diff", "1.0.0", "JByteModX");
     }
 
     @Override
@@ -42,7 +42,7 @@ public class DiffPlugin extends Plugin {
     }
 
     private void buildFrame() {
-        diffFrame = new JFrame("Bytecode Diff / Patch System");
+        diffFrame = new JFrame("Bytecode Diff");
         diffFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         diffFrame.setSize(1100, 620);
         diffFrame.setLocationRelativeTo(null);

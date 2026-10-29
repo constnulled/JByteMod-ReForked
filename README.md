@@ -54,7 +54,7 @@ Obfuscation pattern detection for **Allatori**, **Stringer**, and **ZKM**.
 - Browse loaded classes in the attached process
 - Retransform classes and push changes without restarting the target
 
-### Bytecode Diff & Patching
+### Bytecode Diff 
 - Compare two versions of a method's bytecode side-by-side
 - Build and export instruction-level patch files
 - Apply patches to a loaded JAR

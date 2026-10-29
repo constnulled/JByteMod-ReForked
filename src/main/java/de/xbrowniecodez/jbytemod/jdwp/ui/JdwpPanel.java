@@ -50,6 +50,8 @@ public class JdwpPanel extends JFrame implements JdwpSession.SessionListener, Jd
     private JList<JdwpModel.BreakpointRequest> breakpointList;
     private List<JdwpModel.BreakpointRequest> activeBreakpoints = new ArrayList<>();
 
+    private LivePatchTab livePatchTab;
+
     private JdwpModel.RemoteThread selectedThread;
     private List<JdwpModel.RemoteClass> loadedClasses = new ArrayList<>();
 
@@ -235,6 +237,8 @@ public class JdwpPanel extends JFrame implements JdwpSession.SessionListener, Jd
         tabs.addTab("Stack Frames", buildFramesTab());
         tabs.addTab("Locals", buildLocalsTab());
         tabs.addTab("Event Log", buildEventLogTab());
+        livePatchTab = new LivePatchTab(jbm, this::logEvent);
+        tabs.addTab("Live Patch", livePatchTab);
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(tabs, BorderLayout.CENTER);
@@ -393,6 +397,7 @@ public class JdwpPanel extends JFrame implements JdwpSession.SessionListener, Jd
 
     public void onConnected(JdwpSession session) {
         session.addListener(this);
+        livePatchTab.onConnected(session);
         SwingUtilities.invokeLater(() -> {
             setStatus("Connected", Color.GREEN.darker());
             connectButton.setEnabled(false);
@@ -661,6 +666,7 @@ public class JdwpPanel extends JFrame implements JdwpSession.SessionListener, Jd
     @Override
     public void onSessionClosed(String reason) {
         logEvent("Session closed: " + reason);
+        livePatchTab.onDisconnected();
         SwingUtilities.invokeLater(() -> {
             setStatus("Disconnected", Color.RED);
             connectButton.setEnabled(true);

@@ -1,13 +1,13 @@
 package de.xbrowniecodez.jbytemod.jdwp;
 
-import de.xbrowniecodez.jbytemod.jdwp.protocol.JdwpCommands;
-import de.xbrowniecodez.jbytemod.jdwp.protocol.JdwpConnection;
-import de.xbrowniecodez.jbytemod.jdwp.protocol.JdwpPacket;
-import de.xbrowniecodez.jbytemod.jdwp.protocol.JdwpTag;
+import de.xbrowniecodez.jbytemod.jdwp.protocol.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.List;
 
 public class JdwpSession implements JdwpConnection.EventListener {
@@ -121,7 +121,8 @@ public class JdwpSession implements JdwpConnection.EventListener {
             JdwpPacket.DataWriter w = new JdwpPacket.DataWriter();
             w.writeObjectId(threadId, conn.getObjectIdSize());
             JdwpPacket reply = conn.send(JdwpCommands.CS_THREAD_REFERENCE, JdwpCommands.TR_NAME, w.toBytes());
-            if (!reply.isError()) return reply.reader().readString();
+            if (!reply.isError()) 
+                return reply.reader().readString();
         } catch (Exception ignored) {}
         return "thread-" + threadId;
     }
@@ -180,7 +181,8 @@ public class JdwpSession implements JdwpConnection.EventListener {
                 slotMeta.add(new String[]{name, sig});
             }
         }
-        if (slotInfo.isEmpty()) return Collections.emptyList();
+        if (slotInfo.isEmpty()) 
+            return Collections.emptyList();
         JdwpPacket.DataWriter valQuery = new JdwpPacket.DataWriter();
         valQuery.writeObjectId(frame.threadId, conn.getObjectIdSize());
         valQuery.writeObjectId(frame.frameId, conn.getFrameIdSize());
@@ -191,7 +193,8 @@ public class JdwpSession implements JdwpConnection.EventListener {
             valQuery.writeByte(sig.isEmpty() ? JdwpTag.OBJECT : (byte) sig.charAt(0));
         }
         JdwpPacket valReply = conn.send(JdwpCommands.CS_STACK_FRAME, JdwpCommands.SF_GET_VALUES, valQuery.toBytes());
-        if (valReply.isError()) return Collections.emptyList();
+        if (valReply.isError()) 
+             return Collections.emptyList();
         JdwpPacket.DataReader vvr = valReply.reader();
         int numValues = vvr.readInt();
         List<JdwpModel.LocalVariable> locals = new ArrayList<>(numValues);
@@ -206,22 +209,32 @@ public class JdwpSession implements JdwpConnection.EventListener {
 
     private Object readTaggedValue(JdwpPacket.DataReader r, byte tag) throws IOException {
         switch (tag) {
-            case JdwpTag.BYTE: return (byte) r.readByte();
-            case JdwpTag.BOOLEAN: return r.readBoolean();
-            case JdwpTag.CHAR: return (char) r.readShort();
-            case JdwpTag.SHORT: return r.readShort();
-            case JdwpTag.INT: return r.readInt();
-            case JdwpTag.FLOAT: return Float.intBitsToFloat(r.readInt());
-            case JdwpTag.LONG: return r.readLong();
-            case JdwpTag.DOUBLE: return Double.longBitsToDouble(r.readLong());
-            case JdwpTag.VOID: return "<void>";
+            case JdwpTag.BYTE: 
+                return (byte) r.readByte();
+            case JdwpTag.BOOLEAN: 
+                return r.readBoolean();
+            case JdwpTag.CHAR: 
+                return (char) r.readShort();
+            case JdwpTag.SHORT: 
+                return r.readShort();
+            case JdwpTag.INT: 
+                return r.readInt();
+            case JdwpTag.FLOAT: 
+                return Float.intBitsToFloat(r.readInt());
+            case JdwpTag.LONG: 
+                return r.readLong();
+            case JdwpTag.DOUBLE: 
+                return Double.longBitsToDouble(r.readLong());
+            case JdwpTag.VOID: 
+                return "<void>";
             case JdwpTag.OBJECT:
             case JdwpTag.STRING:
             case JdwpTag.THREAD:
             case JdwpTag.CLASS_OBJECT:
             case JdwpTag.ARRAY: {
                 long id = r.readObjectId(conn.getObjectIdSize());
-                if (tag == JdwpTag.STRING) return resolveString(id);
+                if (tag == JdwpTag.STRING) 
+                return resolveString(id);
                 return JdwpTag.tagName(tag) + "@" + id;
             }
             default:
@@ -321,11 +334,57 @@ public class JdwpSession implements JdwpConnection.EventListener {
         conn.send(JdwpCommands.CS_EVENT_REQUEST, JdwpCommands.ER_CLEAR, w.toBytes());
     }
 
+    public boolean[] getCapabilities() throws IOException, InterruptedException {
+        JdwpPacket reply = conn.send(JdwpCommands.CS_VIRTUAL_MACHINE, JdwpCommands.VM_CAPABILITIES_NEW);
+        if (reply.isError()) 
+            return new boolean[0];
+        JdwpPacket.DataReader r = reply.reader();
+        List<Boolean> flags = new ArrayList<>();
+        while (r.available() > 0) {
+            flags.add(r.readBoolean());
+        }
+        boolean[] result = new boolean[flags.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = flags.get(i);
+        }
+        return result;
+    }
+
+    public Set<String> getFieldKeys(long classId) throws IOException, InterruptedException {
+        JdwpPacket.DataWriter w = new JdwpPacket.DataWriter();
+        w.writeObjectId(classId, conn.getReferenceTypeIdSize());
+        JdwpPacket reply = conn.send(JdwpCommands.CS_REFERENCE_TYPE, JdwpCommands.RT_FIELDS, w.toBytes());
+        checkError(reply);
+        JdwpPacket.DataReader r = reply.reader();
+        int count = r.readInt();
+        Set<String> keys = new LinkedHashSet<>();
+        for (int i = 0; i < count; i++) {
+            r.readObjectId(conn.getFieldIdSize());
+            String name = r.readString();
+            String sig = r.readString();
+            r.readInt();
+            keys.add(name + ":" + sig);
+        }
+        return keys;
+    }
+
+    public void redefineClasses(Map<Long, byte[]> classes) throws IOException, InterruptedException {
+        JdwpPacket.DataWriter w = new JdwpPacket.DataWriter();
+        w.writeInt(classes.size());
+        for (Map.Entry<Long, byte[]> entry : classes.entrySet()) {
+            w.writeObjectId(entry.getKey(), conn.getReferenceTypeIdSize());
+            w.writeInt(entry.getValue().length);
+            w.writeBytes(entry.getValue());
+        }
+        checkError(conn.send(JdwpCommands.CS_VIRTUAL_MACHINE, JdwpCommands.VM_REDEFINE_CLASSES, w.toBytes()));
+    }
+
     public String getClassSignature(long classId) throws IOException, InterruptedException {
         JdwpPacket.DataWriter w = new JdwpPacket.DataWriter();
         w.writeObjectId(classId, conn.getReferenceTypeIdSize());
         JdwpPacket reply = conn.send(JdwpCommands.CS_REFERENCE_TYPE, JdwpCommands.RT_SIGNATURE, w.toBytes());
-        if (reply.isError()) return "<unknown>";
+        if (reply.isError()) 
+        return "<unknown>";
         return reply.reader().readString();
     }
 
@@ -375,18 +434,27 @@ public class JdwpSession implements JdwpConnection.EventListener {
         }
     }
 
-    public void addListener(SessionListener l) { listeners.add(l); }
-    public void removeListener(SessionListener l) { listeners.remove(l); }
+    public void addListener(SessionListener l) { 
+        listeners.add(l); 
+    }
+    
+    public void removeListener(SessionListener l) { 
+        listeners.remove(l); 
+    }
 
-    public JdwpConnection getConnection() { return conn; }
+    public JdwpConnection getConnection() { 
+        return conn; 
+    }
 
     public void close() {
-        try { conn.close(); } catch (Exception ignored) {}
+        try { 
+            conn.close(); 
+        } catch (Exception ignored) {}
     }
 
     private void checkError(JdwpPacket reply) throws IOException {
         if (reply.isError()) {
-            throw new IOException("JDWP error code: " + reply.errorCode);
+            throw new JdwpException(reply.errorCode);
         }
     }
 

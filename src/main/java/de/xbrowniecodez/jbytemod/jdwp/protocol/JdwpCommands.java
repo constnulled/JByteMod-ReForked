@@ -15,6 +15,7 @@ public final class JdwpCommands {
     public static final int VM_CAPABILITIES = 12;
     public static final int VM_ID_SIZES = 7;
     public static final int VM_CAPABILITIES_NEW = 17;
+    public static final int VM_REDEFINE_CLASSES = 18;
 
     public static final int CS_REFERENCE_TYPE = 2;
     public static final int RT_SIGNATURE = 1;
