@@ -176,7 +176,7 @@ public final class RecompileService {
         return index;
     }
 
-    private static URI toUri(String scheme, String path) {
+    private static URI makeUri(String scheme, String path) {
         try {
             return new URI(scheme, null, path.startsWith("/") ? path : "/" + path, null);
         } catch (URISyntaxException e) {
@@ -188,7 +188,7 @@ public final class RecompileService {
         private final String code;
 
         SourceFile(String path, String code) {
-            super(toUri("string", path + Kind.SOURCE.extension), Kind.SOURCE);
+            super(makeUri("string", path + Kind.SOURCE.extension), Kind.SOURCE);
             this.code = code;
         }
 
@@ -204,7 +204,7 @@ public final class RecompileService {
         private final int maxMajor;
 
         ArchiveClass(ClassNode node, int maxMajor) {
-            super(toUri("jar", node.name + Kind.CLASS.extension), Kind.CLASS);
+            super(makeUri("jar", node.name + Kind.CLASS.extension), Kind.CLASS);
             this.node = node;
             this.binaryName = node.name.replace('/', '.');
             this.maxMajor = maxMajor;
@@ -239,7 +239,7 @@ public final class RecompileService {
 
         @Override
         public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, FileObject sibling) {
-            return new SimpleJavaFileObject(toUri("mem", className.replace('.', '/') + kind.extension), kind) {
+            return new SimpleJavaFileObject(makeUri("mem", className.replace('.', '/') + kind.extension), kind) {
                 @Override
                 public OutputStream openOutputStream() {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
